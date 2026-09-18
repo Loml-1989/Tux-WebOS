@@ -2,6 +2,10 @@ const apps = ["Terminal", "Browser", "File Manager", "Settings", "Text Editor", 
 const launcher = document.getElementById('launcher');
 const launcherInput = document.getElementById('launcher-input');
 const launcherResults = document.getElementById('launcher-results');
+const container = document.getElementById('wm-container');
+
+let activeWindow = null;
+let selectedLauncherIndex = 0;
 
 function updateClock() {
     const now = new Date();
@@ -10,39 +14,45 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
+function setActiveWindow(win) {
+    if (activeWindow) {
+        activeWindow.classList.remove('active');
+    }
+    activeWindow = win;
+    if (activeWindow) {
+        activeWindow.classList.add('active');
+        activeWindow.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+}
+
 function spawnWindow(title, content) {
-    const container = document.getElementById('wm-container');
-    
     const win = document.createElement('div');
     win.className = 'window';
     
-    const header = document.createElement('div');
-    header.className = 'window-header';
-    header.textContent = title;
-    
     const body = document.createElement('div');
     body.className = 'window-content';
-    body.textContent = content;
+    body.innerHTML = `<strong>[ ${title} ]</strong><br><br>${content}`;
     
-    win.appendChild(header);
     win.appendChild(body);
+    win.addEventListener('mousedown', () => setActiveWindow(win));
+    
     container.appendChild(win);
+    setActiveWindow(win);
 }
-
-spawnWindow("Terminal", "fastfetch");
-spawnWindow("Browser", "4chan.org");
-spawnWindow("OBS studio", "Record");
 
 function renderLauncherResults(filterText = "") {
     launcherResults.innerHTML = "";
     const filteredApps = apps.filter(app => app.toLowerCase().includes(filterText.toLowerCase()));
     
-    filteredApps.forEach(app => {
+    filteredApps.forEach((app, index) => {
         const div = document.createElement('div');
         div.className = 'launcher-item';
+        if (index === selectedLauncherIndex) {
+            div.classList.add('selected');
+        }
         div.textContent = app;
         div.addEventListener('click', () => {
-            spawnWindow(app, `Launching ${app}...`);
+            spawnWindow(app, `Session loaded for ${app}.`);
             toggleLauncher(false);
         });
         launcherResults.appendChild(div);
@@ -56,6 +66,7 @@ function toggleLauncher(forceShow) {
     if (shouldShow) {
         launcher.classList.remove('hidden');
         launcherInput.value = "";
+        selectedLauncherIndex = 0;
         renderLauncherResults();
         setTimeout(() => launcherInput.focus(), 10);
     } else {
@@ -64,16 +75,63 @@ function toggleLauncher(forceShow) {
 }
 
 document.addEventListener('keydown', (e) => {
+    const launcherActive = !launcher.classList.contains('hidden');
+
     if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
         e.preventDefault();
         toggleLauncher();
+        return;
     }
-    
-    if (e.key === 'Escape' && !launcher.classList.contains('hidden')) {
-        toggleLauncher(false);
+
+    if (launcherActive) {
+        const items = launcherResults.querySelectorAll('.launcher-item');
+        
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            toggleLauncher(false);
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (items.length > 0) {
+                selectedLauncherIndex = (selectedLauncherIndex + 1) % items.length;
+                renderLauncherResults(launcherInput.value);
+            }
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (items.length > 0) {
+                selectedLauncherIndex = (selectedLauncherIndex - 1 + items.length) % items.length;
+                renderLauncherResults(launcherInput.value);
+            }
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (items[selectedLauncherIndex]) {
+                items[selectedLauncherIndex].click();
+            }
+        }
+        return;
+    }
+
+    if (e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+        e.preventDefault();
+        if (activeWindow) {
+            const nextWindow = activeWindow.nextElementSibling || activeWindow.previousElementSibling;
+            container.removeChild(activeWindow);
+            setActiveWindow(nextWindow);
+        }
+    }
+
+    if (e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+        e.preventDefault();
+        if (activeWindow) {
+            activeWindow.classList.toggle('fullscreen');
+            activeWindow.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
     }
 });
 
 launcherInput.addEventListener('input', (e) => {
+    selectedLauncherIndex = 0;
     renderLauncherResults(e.target.value);
 });
+
+spawnWindow("Terminal", "stardance@webos:~$ neofetch");
+spawnWindow("Browser", "Browsing the cosmos...");
