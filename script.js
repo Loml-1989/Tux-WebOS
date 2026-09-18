@@ -5,10 +5,10 @@ const launcherResults = document.getElementById('launcher-results');
 const container = document.getElementById('wm-container');
 
 const wallpapers = [
-    { name: "City", url: "https://w.wallhaven.cc/full/3q/wallhaven-3q3re9.png" },
-    { name: "Pixel Art", url: "https://w.wallhaven.cc/full/k8/wallhaven-k8z72q.png" },
-    { name: "School Uniform", url: "https://w.wallhaven.cc/full/zp/wallhaven-zp9odw.jpg" },
-    { name: "Butterfly", url: "https://w.wallhaven.cc/full/gw/wallhaven-gwdlm7.jpg" }
+    { name: "Neo Waifu", url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=2560&auto=format&fit=crop" },
+    { name: "Cyber Sunset", url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2560&auto=format&fit=crop" },
+    { name: "Neon District", url: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=2560&auto=format&fit=crop" },
+    { name: "Deep Space", url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=2560&auto=format&fit=crop" }
 ];
 
 let activeWindow = null;
@@ -166,6 +166,54 @@ function buildTerminalContent(bodyElement, winElement) {
     setTimeout(() => input.focus(), 50);
 }
 
+function buildBrowserContent() {
+    const container = document.createElement('div');
+    container.className = 'browser-container';
+
+    const nav = document.createElement('div');
+    nav.className = 'browser-nav';
+
+    const input = document.createElement('input');
+    input.className = 'browser-url';
+    input.type = 'text';
+    input.value = 'https://en.wikipedia.org';
+
+    const goBtn = document.createElement('button');
+    goBtn.className = 'browser-btn';
+    goBtn.textContent = 'Go';
+
+    const frame = document.createElement('iframe');
+    frame.className = 'browser-frame';
+    frame.src = input.value;
+
+    function navigate() {
+        let url = input.value.trim();
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+            input.value = url;
+        }
+        frame.src = url;
+    }
+
+    goBtn.addEventListener('click', navigate);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') navigate();
+    });
+
+    const warning = document.createElement('div');
+    warning.className = 'browser-warning';
+    warning.textContent = 'Note: Some sites block embedding. If it refuses to connect, try another URL.';
+
+    nav.appendChild(input);
+    nav.appendChild(goBtn);
+    
+    container.appendChild(nav);
+    container.appendChild(warning);
+    container.appendChild(frame);
+
+    return container;
+}
+
 function spawnWindow(title, content) {
     const win = document.createElement('div');
     win.className = 'window';
@@ -181,6 +229,8 @@ function spawnWindow(title, content) {
         body.appendChild(buildSettingsContent());
     } else if (title === 'Terminal') {
         buildTerminalContent(body, win);
+    } else if (title === 'Browser') {
+        body.appendChild(buildBrowserContent());
     } else {
         const textNode = document.createElement('div');
         textNode.innerHTML = content;
@@ -306,3 +356,4 @@ launcherInput.addEventListener('input', (e) => {
 });
 
 spawnWindow("Terminal", "");
+spawnWindow("Browser", "");
