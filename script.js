@@ -5,11 +5,27 @@ const launcherResults = document.getElementById('launcher-results');
 const container = document.getElementById('wm-container');
 
 const wallpapers = [
-    { name: "Neo Waifu", url: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=2560&auto=format&fit=crop" },
-    { name: "Cyber Sunset", url: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=2560&auto=format&fit=crop" },
-    { name: "Neon District", url: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=2560&auto=format&fit=crop" },
-    { name: "Deep Space", url: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=2560&auto=format&fit=crop" }
+    { name: "City", url: "https://w.wallhaven.cc/full/3q/wallhaven-3q3re9.png" },
+    { name: "Pixel Art", url: "https://w.wallhaven.cc/full/k8/wallhaven-k8z72q.png" },
+    { name: "School Uniform", url: "https://w.wallhaven.cc/full/zp/wallhaven-zp9odw.jpg" },
+    { name: "Butterfly", url: "https://w.wallhaven.cc/full/gw/wallhaven-gwdlm7.jpg" }
 ];
+
+const virtualFS = {
+    "home": {
+        "stardance": {
+            "Documents": {
+                "notes.txt": "Project Stardance objectives completed.",
+                "todo.md": "- Implement File Manager\n- Check keyboard navigation\n- Sleep"
+            },
+            "Pictures": {
+                "waifu.png": "[Image Data Encrypted]"
+            },
+            "Downloads": {},
+            "readme.txt": "Welcome to the WebOS Virtual File System.\n\nEverything here runs in-memory."
+        }
+    }
+};
 
 let activeWindow = null;
 let selectedLauncherIndex = 0;
@@ -214,6 +230,93 @@ function buildBrowserContent() {
     return container;
 }
 
+function buildFileManagerContent() {
+    const container = document.createElement('div');
+    container.className = 'fm-container';
+
+    const nav = document.createElement('div');
+    nav.className = 'fm-nav';
+
+    const upBtn = document.createElement('button');
+    upBtn.className = 'fm-up-btn';
+    upBtn.textContent = '↑ Up';
+
+    const pathDisplay = document.createElement('div');
+    pathDisplay.className = 'fm-path';
+
+    nav.appendChild(upBtn);
+    nav.appendChild(pathDisplay);
+
+    const grid = document.createElement('div');
+    grid.className = 'fm-grid';
+
+    container.appendChild(nav);
+    container.appendChild(grid);
+
+    let currentPath = ['home', 'stardance'];
+
+    function getDir(pathArray) {
+        let current = virtualFS;
+        for (const segment of pathArray) {
+            if (current[segment]) {
+                current = current[segment];
+            } else {
+                return null;
+            }
+        }
+        return current;
+    }
+
+    function renderGrid() {
+        grid.innerHTML = '';
+        pathDisplay.textContent = '/' + currentPath.join('/');
+        
+        const currentDir = getDir(currentPath);
+        if (!currentDir) return;
+
+        const entries = Object.entries(currentDir);
+        
+        entries.forEach(([name, content]) => {
+            const isDir = typeof content === 'object';
+            
+            const item = document.createElement('div');
+            item.className = 'fm-item';
+            
+            const icon = document.createElement('div');
+            icon.className = 'fm-icon';
+            icon.textContent = isDir ? '📁' : '📄';
+            
+            const label = document.createElement('div');
+            label.className = 'fm-name';
+            label.textContent = name;
+            
+            item.appendChild(icon);
+            item.appendChild(label);
+            
+            item.addEventListener('click', () => {
+                if (isDir) {
+                    currentPath.push(name);
+                    renderGrid();
+                } else {
+                    spawnWindow('Text Editor', `<div style="white-space: pre-wrap;">${content}</div>`);
+                }
+            });
+            
+            grid.appendChild(item);
+        });
+    }
+
+    upBtn.addEventListener('click', () => {
+        if (currentPath.length > 1) {
+            currentPath.pop();
+            renderGrid();
+        }
+    });
+
+    renderGrid();
+    return container;
+}
+
 function spawnWindow(title, content) {
     const win = document.createElement('div');
     win.className = 'window';
@@ -231,6 +334,8 @@ function spawnWindow(title, content) {
         buildTerminalContent(body, win);
     } else if (title === 'Browser') {
         body.appendChild(buildBrowserContent());
+    } else if (title === 'File Manager') {
+        body.appendChild(buildFileManagerContent());
     } else {
         const textNode = document.createElement('div');
         textNode.innerHTML = content;
@@ -356,4 +461,4 @@ launcherInput.addEventListener('input', (e) => {
 });
 
 spawnWindow("Terminal", "");
-spawnWindow("Browser", "");
+spawnWindow("File Manager", "");

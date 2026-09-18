@@ -295,3 +295,81 @@ body {
     border-radius: 6px;
     width: 100%;
 }
+
+.fm-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.fm-nav {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background-color: #11111b;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #313244;
+}
+
+.fm-up-btn {
+    background-color: #313244;
+    color: #cdd6f4;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.fm-up-btn:hover {
+    background-color: #45475a;
+}
+
+.fm-path {
+    color: #a6e3a1;
+    font-size: 14px;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.fm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 12px;
+    padding: 10px 0;
+    overflow-y: auto;
+    flex-grow: 1;
+    align-content: start;
+}
+
+.fm-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.fm-item:hover {
+    background-color: rgba(49, 50, 68, 0.8);
+}
+
+.fm-icon {
+    font-size: 32px;
+}
+
+.fm-name {
+    font-size: 12px;
+    text-align: center;
+    color: #cdd6f4;
+    word-break: break-all;
+}
