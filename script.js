@@ -1,3 +1,8 @@
+const apps = ["Terminal", "Browser", "File Manager", "Settings", "Text Editor", "System Monitor"];
+const launcher = document.getElementById('launcher');
+const launcherInput = document.getElementById('launcher-input');
+const launcherResults = document.getElementById('launcher-results');
+
 function updateClock() {
     const now = new Date();
     document.getElementById('clock').textContent = now.toLocaleTimeString();
@@ -6,29 +11,27 @@ setInterval(updateClock, 1000);
 updateClock();
 
 function spawnWindow(title, content) {
-    const container = document.getElementById('wm-container')
+    const container = document.getElementById('wm-container');
+    
     const win = document.createElement('div');
     win.className = 'window';
+    
     const header = document.createElement('div');
     header.className = 'window-header';
     header.textContent = title;
+    
     const body = document.createElement('div');
-    body.className = 'window-header';
+    body.className = 'window-content';
     body.textContent = content;
-
+    
     win.appendChild(header);
     win.appendChild(body);
     container.appendChild(win);
 }
 
 spawnWindow("Terminal", "fastfetch");
-spawnWindow("Browser", "Welcome!");
-spawnWindow("Obs Studio", "Record");
-
-const apps = ["Terminal", "Browser", "File Manager", "Settings", "Text Editor", "System Monitor"];
-const launcher = document.getElementById('launcher');
-const launcherInput = document.getElementById('launcher-input');
-const launcherResults = document.getElementById('launcher-results');
+spawnWindow("Browser", "4chan.org");
+spawnWindow("OBS studio", "Record");
 
 function renderLauncherResults(filterText = "") {
     launcherResults.innerHTML = "";
@@ -46,26 +49,27 @@ function renderLauncherResults(filterText = "") {
     });
 }
 
-function toggleLauncher(forceState) {
+function toggleLauncher(forceShow) {
     const isHidden = launcher.classList.contains('hidden');
-    const newState = forceState !== undefined ? !forceState : !isHidden;
+    const shouldShow = forceShow !== undefined ? forceShow : isHidden;
     
-    if (newState) {
+    if (shouldShow) {
         launcher.classList.remove('hidden');
         launcherInput.value = "";
         renderLauncherResults();
-        launcherInput.focus();
+        setTimeout(() => launcherInput.focus(), 10);
     } else {
         launcher.classList.add('hidden');
     }
 }
+
 document.addEventListener('keydown', (e) => {
-    if (e.shiftKey && e.code === 'Space') {
+    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
         e.preventDefault();
         toggleLauncher();
     }
     
-    if (e.code === 'Escape' && !launcher.classList.contains('hidden')) {
+    if (e.key === 'Escape' && !launcher.classList.contains('hidden')) {
         toggleLauncher(false);
     }
 });
