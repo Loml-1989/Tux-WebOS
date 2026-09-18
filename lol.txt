@@ -1,0 +1,6 @@
+const wallpapers = [
+    { name: "City", url: "https://w.wallhaven.cc/full/3q/wallhaven-3q3re9.png" },
+    { name: "Pixel Art", url: "https://w.wallhaven.cc/full/k8/wallhaven-k8z72q.png" },
+    { name: "School Uniform", url: "https://w.wallhaven.cc/full/zp/wallhaven-zp9odw.jpg" },
+    { name: "Butterfly", url: "https://w.wallhaven.cc/full/gw/wallhaven-gwdlm7.jpg" }
+];

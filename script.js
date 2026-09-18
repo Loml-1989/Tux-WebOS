@@ -91,6 +91,81 @@ function buildSettingsContent() {
     return wrapper;
 }
 
+function buildTerminalContent(bodyElement, winElement) {
+    const outputDiv = document.createElement('div');
+    outputDiv.className = 'terminal-output';
+    outputDiv.innerHTML = 'Welcome to WebOS. Type "help" for available commands.\n\n';
+
+    const inputLine = document.createElement('div');
+    inputLine.className = 'terminal-input-line';
+
+    const prompt = document.createElement('span');
+    prompt.className = 'terminal-prompt';
+    prompt.textContent = 'stardance@webos:~$';
+
+    const input = document.createElement('input');
+    input.className = 'terminal-input';
+    input.type = 'text';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+
+    inputLine.appendChild(prompt);
+    inputLine.appendChild(input);
+
+    bodyElement.appendChild(outputDiv);
+    bodyElement.appendChild(inputLine);
+
+    winElement.addEventListener('click', () => {
+        input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = input.value.trim();
+            input.value = '';
+
+            if (cmd.toLowerCase() === 'clear') {
+                outputDiv.innerHTML = '';
+                return;
+            }
+
+            const historyLog = document.createElement('div');
+            historyLog.textContent = `stardance@webos:~$ ${cmd}`;
+            outputDiv.appendChild(historyLog);
+
+            if (cmd) {
+                let response = '';
+                const args = cmd.split(' ');
+                const base = args[0].toLowerCase();
+
+                if (base === 'help') {
+                    response = 'Commands:\n  help     - Show this message\n  clear    - Clear terminal output\n  echo     - Print text to screen\n  date     - Show current date and time\n  whoami   - Print current user\n  neofetch - Show system information';
+                } else if (base === 'echo') {
+                    response = args.slice(1).join(' ');
+                } else if (base === 'date') {
+                    response = new Date().toString();
+                } else if (base === 'whoami') {
+                    response = 'stardance';
+                } else if (base === 'neofetch') {
+                    response = '       /\\        OS: WebOS\n      /  \\       Host: Stardance\n     /____\\      Kernel: 1.0.0-webos\n    /      \\     Uptime: Just booted\n   /        \\    Shell: js-sh\n  /__________\\   WM: flex-wm';
+                } else {
+                    response = `js-sh: command not found: ${base}`;
+                }
+
+                if (response) {
+                    const responseLog = document.createElement('div');
+                    responseLog.textContent = response;
+                    outputDiv.appendChild(responseLog);
+                }
+            }
+            
+            bodyElement.scrollTop = bodyElement.scrollHeight;
+        }
+    });
+
+    setTimeout(() => input.focus(), 50);
+}
+
 function spawnWindow(title, content) {
     const win = document.createElement('div');
     win.className = 'window';
@@ -104,6 +179,8 @@ function spawnWindow(title, content) {
 
     if (title === 'Settings') {
         body.appendChild(buildSettingsContent());
+    } else if (title === 'Terminal') {
+        buildTerminalContent(body, win);
     } else {
         const textNode = document.createElement('div');
         textNode.innerHTML = content;
@@ -187,7 +264,9 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    if (e.shiftKey && (e.code === 'KeyC' || e.key.toLowerCase() === 'c')) {
+    const shiftHeld = e.shiftKey || e.getModifierState('CapsLock');
+
+    if (shiftHeld && (e.code === 'KeyC' || e.key.toLowerCase() === 'c')) {
         e.preventDefault();
         if (activeWindow) {
             const nextWindow = activeWindow.nextElementSibling || activeWindow.previousElementSibling;
@@ -196,7 +275,7 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    if (e.shiftKey && (e.code === 'KeyI' || e.key.toLowerCase() === 'i')) {
+    if (shiftHeld && (e.code === 'KeyI' || e.key.toLowerCase() === 'i')) {
         e.preventDefault();
         if (activeWindow) {
             activeWindow.classList.toggle('fullscreen');
@@ -206,14 +285,14 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    if (e.shiftKey && (e.code === 'KeyH' || e.key.toLowerCase() === 'h')) {
+    if (shiftHeld && (e.code === 'KeyH' || e.key.toLowerCase() === 'h')) {
         e.preventDefault();
         if (activeWindow && activeWindow.previousElementSibling) {
             setActiveWindow(activeWindow.previousElementSibling);
         }
     }
 
-    if (e.shiftKey && (e.code === 'KeyL' || e.key.toLowerCase() === 'l')) {
+    if (shiftHeld && (e.code === 'KeyL' || e.key.toLowerCase() === 'l')) {
         e.preventDefault();
         if (activeWindow && activeWindow.nextElementSibling) {
             setActiveWindow(activeWindow.nextElementSibling);
@@ -226,5 +305,4 @@ launcherInput.addEventListener('input', (e) => {
     renderLauncherResults(e.target.value);
 });
 
-spawnWindow("Terminal", "stardance@webos:~$ neofetch");
-spawnWindow("Settings", "");
+spawnWindow("Terminal", "");

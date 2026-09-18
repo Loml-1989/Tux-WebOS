@@ -214,3 +214,31 @@ body {
 .custom-url-btn:hover {
     opacity: 0.9;
 }
+
+
+.terminal-output {
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+    color: #cdd6f4;
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+}
+
+.terminal-prompt {
+    color: #a6e3a1;
+    margin-right: 8px;
+    font-weight: bold;
+}
+
+.terminal-input {
+    background: transparent;
+    border: none;
+    color: #cdd6f4;
+    font-family: monospace;
+    font-size: 15px;
+    flex-grow: 1;
+    outline: none;
+}
