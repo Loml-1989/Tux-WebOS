@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tux WebOS</title>
+<title>Linux WebOS</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="launcher" class="hidden">
+        <input type="text" id="launcher-input" placeholder="Search apps...">
+        <div id="launcher-results"></div>
+    </div>
     <div id="wm-container"></div>
     <div id="bottom-bar">
         <div class="bar-module">Workspace 1</div>
         <div class="bar-module">WebOS</div>
         <div class="bar-module" id="clock">00:00</div>
-    </div>
-    <div id="launcher" class="hidden">
-        <input type="text" id="launcher-input" placeholder="Search...">
-        <div id="launcher-results"></div>
     </div>
     <script src="script.js"></script>
 </body>

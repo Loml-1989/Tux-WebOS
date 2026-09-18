@@ -110,7 +110,9 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    if (e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+    const shiftHeld = e.shiftKey || e.getModifierState('CapsLock');
+
+    if (shiftHeld && (e.code === 'KeyC' || e.key.toLowerCase() === 'c')) {
         e.preventDefault();
         if (activeWindow) {
             const nextWindow = activeWindow.nextElementSibling || activeWindow.previousElementSibling;
@@ -119,13 +121,30 @@ document.addEventListener('keydown', (e) => {
         }
     }
 
-    if (e.shiftKey && (e.key === 'I' || e.key === 'i')) {
+    if (shiftHeld && (e.code === 'KeyI' || e.key.toLowerCase() === 'i')) {
         e.preventDefault();
         if (activeWindow) {
             activeWindow.classList.toggle('fullscreen');
-            activeWindow.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            setTimeout(() => {
+                activeWindow.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            }, 50);
         }
     }
+
+    if (shiftHeld && (e.code === 'KeyH' || e.key.toLowerCase() === 'h')) {
+        e.preventDefault();
+        if (activeWindow && activeWindow.previousElementSibling) {
+            setActiveWindow(activeWindow.previousElementSibling);
+        }
+    }
+
+    if (shiftHeld && (e.code === 'KeyL' || e.key.toLowerCase() === 'l')) {
+        e.preventDefault();
+        if (activeWindow && activeWindow.nextElementSibling) {
+            setActiveWindow(activeWindow.nextElementSibling);
+        }
+    }
+
 });
 
 launcherInput.addEventListener('input', (e) => {
