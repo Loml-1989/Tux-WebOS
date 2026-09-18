@@ -65,3 +65,48 @@ body {
     padding: 15px;
     flex-grow: 1;
 }
+
+#launcher {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    background-color: #181825;
+    border: 2px solid #cba6f7;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+#launcher.hidden {
+    display: none;
+}
+
+#launcher-input {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #313244;
+    color: #cdd6f4;
+    font-size: 16px;
+    outline: none;
+}
+
+#launcher-results {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.launcher-item {
+    padding: 12px 15px;
+    cursor: pointer;
+}
+
+.launcher-item:hover, .launcher-item.selected {
+    background-color: #313244;
+    color: #a6e3a1;
+}
