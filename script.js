@@ -31,7 +31,8 @@ let activeWindow = null;
 let selectedLauncherIndex = 0;
 
 function setWallpaper(url) {
-    document.body.style.backgroundImage = `radial-gradient(ellipse at center, rgba(30, 30, 46, 0.45) 0%, rgba(17, 17, 27, 0.85) 100%), url('${url}')`;
+    const safeUrl = url.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    document.body.style.backgroundImage = `radial-gradient(ellipse at center, rgba(30, 30, 46, 0.45) 0%, rgba(17, 17, 27, 0.85) 100%), url('${safeUrl}')`;
 }
 
 function updateClock() {
@@ -290,18 +291,17 @@ function buildFileManagerContent() {
             label.className = 'fm-name';
             label.textContent = name;
             
-            item.appendChild(icon);
-            item.appendChild(label);
-            
             item.addEventListener('click', () => {
                 if (isDir) {
                     currentPath.push(name);
                     renderGrid();
                 } else {
-                    spawnWindow('Text Editor', `<div style="white-space: pre-wrap;">${content}</div>`);
+                    spawnWindow('Text Editor', { path: [...currentPath], name: name, content: currentDir[name] });
                 }
             });
             
+            item.appendChild(icon);
+            item.appendChild(label);
             grid.appendChild(item);
         });
     }
@@ -314,6 +314,59 @@ function buildFileManagerContent() {
     });
 
     renderGrid();
+    return container;
+}
+
+function buildTextEditorContent(fileData) {
+    const container = document.createElement('div');
+    container.className = 'editor-container';
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'editor-toolbar';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.className = 'editor-btn';
+    saveBtn.textContent = 'Save';
+
+    const info = document.createElement('span');
+    info.className = 'editor-info';
+
+    const isFile = typeof fileData === 'object' && fileData !== null;
+    let textContent = isFile ? fileData.content : (fileData || '');
+    if (textContent.startsWith('Session loaded')) {
+        textContent = '';
+    }
+
+    info.textContent = isFile ? fileData.name : 'scratchpad.txt';
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'editor-textarea';
+    textarea.value = textContent;
+    textarea.spellcheck = false;
+
+    saveBtn.addEventListener('click', () => {
+        if (isFile) {
+            let current = virtualFS;
+            for (const segment of fileData.path) {
+                current = current[segment];
+            }
+            current[fileData.name] = textarea.value;
+            saveBtn.textContent = 'Saved!';
+            setTimeout(() => saveBtn.textContent = 'Save', 2000);
+        } else {
+            saveBtn.textContent = 'Scratchpad';
+            setTimeout(() => saveBtn.textContent = 'Save', 2000);
+        }
+    });
+
+    toolbar.appendChild(saveBtn);
+    toolbar.appendChild(info);
+    
+    container.appendChild(toolbar);
+    container.appendChild(textarea);
+
+    setTimeout(() => textarea.focus(), 50);
+
     return container;
 }
 
@@ -336,6 +389,8 @@ function spawnWindow(title, content) {
         body.appendChild(buildBrowserContent());
     } else if (title === 'File Manager') {
         body.appendChild(buildFileManagerContent());
+    } else if (title === 'Text Editor') {
+        body.appendChild(buildTextEditorContent(content));
     } else {
         const textNode = document.createElement('div');
         textNode.innerHTML = content;
@@ -385,13 +440,7 @@ function toggleLauncher(forceShow) {
 
 document.addEventListener('keydown', (e) => {
     const launcherActive = !launcher.classList.contains('hidden');
-
-    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
-        e.preventDefault();
-        toggleLauncher();
-        return;
-    }
-
+    
     if (launcherActive) {
         const items = launcherResults.querySelectorAll('.launcher-item');
         
@@ -416,6 +465,25 @@ document.addEventListener('keydown', (e) => {
                 items[selectedLauncherIndex].click();
             }
         }
+        return;
+    }
+
+    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
+        e.preventDefault();
+        if (document.activeElement) document.activeElement.blur();
+        toggleLauncher();
+        return;
+    }
+
+    const activeTag = document.activeElement ? document.activeElement.tagName : '';
+    const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA';
+
+    if (e.key === 'Escape' && isTyping) {
+        document.activeElement.blur();
+        return;
+    }
+
+    if (isTyping) {
         return;
     }
 
@@ -460,5 +528,10 @@ launcherInput.addEventListener('input', (e) => {
     renderLauncherResults(e.target.value);
 });
 
+document.getElementById('launcher-btn').addEventListener('click', () => {
+    if (document.activeElement) document.activeElement.blur();
+    toggleLauncher();
+});
+
 spawnWindow("Terminal", "");
-spawnWindow("File Manager", "");
+spawnWindow("Text Editor", "");
