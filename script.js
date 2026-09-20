@@ -52,6 +52,23 @@ function setActiveWindow(win) {
     }
 }
 
+function buildWelcomeContent() {
+    const container = document.createElement('div');
+    container.className = 'welcome-container';
+    container.innerHTML = `
+        <div class="welcome-title">Welcome to Tux WebOS</div>
+        <div class="welcome-subtitle">A fully keyboard driven, in browser tiling window manager.</div>
+        <div class="shortcut-list">
+            <div class="shortcut-item"><span class="shortcut-key">Shift + Space</span><span class="shortcut-desc">Open App Launcher</span></div>
+            <div class="shortcut-item"><span class="shortcut-key">Shift + C</span><span class="shortcut-desc">Close Active Window</span></div>
+            <div class="shortcut-item"><span class="shortcut-key">Shift + I</span><span class="shortcut-desc">Toggle Fullscreen</span></div>
+            <div class="shortcut-item"><span class="shortcut-key">Shift + H / L</span><span class="shortcut-desc">Cycle Active Window</span></div>
+            <div class="shortcut-item"><span class="shortcut-key">Escape</span><span class="shortcut-desc">Unfocus Input / Close Launcher</span></div>
+        </div>
+    `;
+    return container;
+}
+
 function buildSettingsContent() {
     const wrapper = document.createElement('div');
     wrapper.className = 'settings-container';
@@ -192,7 +209,7 @@ function buildBrowserContent() {
     const input = document.createElement('input');
     input.className = 'browser-url';
     input.type = 'text';
-    input.value = 'https://en.wikipedia.org';
+    input.value = 'https://wiki.archlinux.org/title/Main_page';
 
     const goBtn = document.createElement('button');
     goBtn.className = 'browser-btn';
@@ -463,7 +480,9 @@ function spawnWindow(title, content) {
     windowTitle.innerHTML = `<strong>[ ${title} ]</strong><br><br>`;
     body.appendChild(windowTitle);
 
-    if (title === 'Settings') {
+    if (title === 'Welcome') {
+        body.appendChild(buildWelcomeContent());
+    } else if (title === 'Settings') {
         body.appendChild(buildSettingsContent());
     } else if (title === 'Terminal') {
         buildTerminalContent(body, win);
@@ -611,4 +630,4 @@ launcherInput.addEventListener('input', (e) => {
     renderLauncherResults(e.target.value);
 });
 
-spawnWindow("System Monitor", "");
+spawnWindow("Welcome", "");
