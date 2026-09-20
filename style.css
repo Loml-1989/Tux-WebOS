@@ -134,15 +134,6 @@ body {
     color: #a6adc8;
 }
 
-.bar-module-clickable {
-    cursor: pointer;
-    transition: color 0.15s ease;
-}
-
-.bar-module-clickable:hover {
-    color: #f5c2e7;
-}
-
 .settings-container {
     display: flex;
     flex-direction: column;
@@ -432,4 +423,61 @@ body {
 
 .editor-textarea:focus {
     border-color: #f5c2e7;
+}
+
+.sysmon-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    font-size: 13px;
+}
+
+.sysmon-header {
+    font-weight: bold;
+    color: #f5c2e7;
+    text-transform: uppercase;
+    border-bottom: 1px solid #313244;
+    padding-bottom: 4px;
+    margin-top: 8px;
+}
+
+.sysmon-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.sysmon-bar-bg {
+    width: 100%;
+    background-color: #11111b;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 4px;
+    border: 1px solid #313244;
+}
+
+.sysmon-bar-fill {
+    height: 100%;
+    background-color: #a6e3a1;
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+.sysmon-process-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px;
+}
+
+.sysmon-process {
+    display: flex;
+    justify-content: space-between;
+    background-color: rgba(49, 50, 68, 0.4);
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid transparent;
 }

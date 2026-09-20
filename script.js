@@ -2,7 +2,7 @@ const apps = ["Terminal", "Browser", "File Manager", "Settings", "Text Editor", 
 const launcher = document.getElementById('launcher');
 const launcherInput = document.getElementById('launcher-input');
 const launcherResults = document.getElementById('launcher-results');
-const container = document.getElementById('wm-container');
+const wmContainer = document.getElementById('wm-container');
 
 const wallpapers = [
     { name: "City", url: "https://w.wallhaven.cc/full/3q/wallhaven-3q3re9.png" },
@@ -31,8 +31,7 @@ let activeWindow = null;
 let selectedLauncherIndex = 0;
 
 function setWallpaper(url) {
-    const safeUrl = url.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    document.body.style.backgroundImage = `radial-gradient(ellipse at center, rgba(30, 30, 46, 0.45) 0%, rgba(17, 17, 27, 0.85) 100%), url('${safeUrl}')`;
+    document.body.style.backgroundImage = `radial-gradient(ellipse at center, rgba(30, 30, 46, 0.45) 0%, rgba(17, 17, 27, 0.85) 100%), url('${url}')`;
 }
 
 function updateClock() {
@@ -296,7 +295,7 @@ function buildFileManagerContent() {
                     currentPath.push(name);
                     renderGrid();
                 } else {
-                    spawnWindow('Text Editor', { path: [...currentPath], name: name, content: currentDir[name] });
+                    spawnWindow('Text Editor', { path: [...currentPath], name: name, content: content });
                 }
             });
             
@@ -370,6 +369,89 @@ function buildTextEditorContent(fileData) {
     return container;
 }
 
+function buildSystemMonitorContent() {
+    const container = document.createElement('div');
+    container.className = 'sysmon-container';
+
+    const osCores = navigator.hardwareConcurrency || 4;
+    const osMem = navigator.deviceMemory || 8;
+    const userAgentStr = navigator.userAgent.split(' ')[0] || "WebOS_Kernel/1.0";
+
+    container.innerHTML = `
+        <div class="sysmon-header">System Information</div>
+        <div class="sysmon-row"><span>OS Architecture</span><span>${userAgentStr}</span></div>
+        <div class="sysmon-row"><span>Logical Cores</span><span>${osCores} Threads</span></div>
+        <div class="sysmon-row"><span>Total Memory</span><span>~${osMem}.0 GB RAM</span></div>
+        
+        <div class="sysmon-header">Hardware Utilization</div>
+        <div class="sysmon-row">
+            <span>CPU Load</span>
+            <span id="sm-cpu-text">0%</span>
+        </div>
+        <div class="sysmon-bar-bg"><div class="sysmon-bar-fill" id="sm-cpu-bar" style="width: 0%;"></div></div>
+        
+        <div class="sysmon-row" style="margin-top: 10px;">
+            <span>Memory Allocation</span>
+            <span id="sm-ram-text">0%</span>
+        </div>
+        <div class="sysmon-bar-bg"><div class="sysmon-bar-fill" id="sm-ram-bar" style="width: 0%;"></div></div>
+
+        <div class="sysmon-header">Active Tasks</div>
+        <div class="sysmon-process-list" id="sm-process-list"></div>
+    `;
+
+    const cpuText = container.querySelector('#sm-cpu-text');
+    const cpuBar = container.querySelector('#sm-cpu-bar');
+    const ramText = container.querySelector('#sm-ram-text');
+    const ramBar = container.querySelector('#sm-ram-bar');
+    const processList = container.querySelector('#sm-process-list');
+
+    let baseRam = Math.floor(Math.random() * 20) + 30;
+
+    const monitorInterval = setInterval(() => {
+        if (!document.body.contains(container)) {
+            clearInterval(monitorInterval);
+            return;
+        }
+
+        const currentCpu = Math.floor(Math.random() * 35) + 5;
+        cpuText.textContent = `${currentCpu}%`;
+        cpuBar.style.width = `${currentCpu}%`;
+        cpuBar.style.backgroundColor = currentCpu > 30 ? '#f38ba8' : '#a6e3a1';
+
+        const ramFluctuation = Math.floor(Math.random() * 5) - 2;
+        baseRam = Math.max(15, Math.min(85, baseRam + ramFluctuation));
+        ramText.textContent = `${baseRam}%`;
+        ramBar.style.width = `${baseRam}%`;
+        ramBar.style.backgroundColor = baseRam > 70 ? '#f38ba8' : '#a6e3a1';
+
+        processList.innerHTML = '';
+        const activeWindows = wmContainer.querySelectorAll('.window');
+        
+        activeWindows.forEach((win, index) => {
+            const titleElement = win.querySelector('strong');
+            const titleStr = titleElement ? titleElement.textContent.replace(/\[\vert{}\]/g, '').trim() : 'Unknown Process';
+            
+            const pRow = document.createElement('div');
+            pRow.className = 'sysmon-process';
+            
+            const pName = document.createElement('span');
+            pName.textContent = titleStr;
+            
+            const pId = document.createElement('span');
+            pId.textContent = `PID ${1042 + index}`;
+            pId.style.color = '#a6adc8';
+            
+            pRow.appendChild(pName);
+            pRow.appendChild(pId);
+            processList.appendChild(pRow);
+        });
+
+    }, 1500);
+
+    return container;
+}
+
 function spawnWindow(title, content) {
     const win = document.createElement('div');
     win.className = 'window';
@@ -391,6 +473,8 @@ function spawnWindow(title, content) {
         body.appendChild(buildFileManagerContent());
     } else if (title === 'Text Editor') {
         body.appendChild(buildTextEditorContent(content));
+    } else if (title === 'System Monitor') {
+        body.appendChild(buildSystemMonitorContent());
     } else {
         const textNode = document.createElement('div');
         textNode.innerHTML = content;
@@ -400,7 +484,7 @@ function spawnWindow(title, content) {
     win.appendChild(body);
     win.addEventListener('mousedown', () => setActiveWindow(win));
     
-    container.appendChild(win);
+    wmContainer.appendChild(win);
     setActiveWindow(win);
 }
 
@@ -468,13 +552,6 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
-    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
-        e.preventDefault();
-        if (document.activeElement) document.activeElement.blur();
-        toggleLauncher();
-        return;
-    }
-
     const activeTag = document.activeElement ? document.activeElement.tagName : '';
     const isTyping = activeTag === 'INPUT' || activeTag === 'TEXTAREA';
 
@@ -487,13 +564,19 @@ document.addEventListener('keydown', (e) => {
         return;
     }
 
+    if (e.shiftKey && (e.code === 'Space' || e.key === ' ')) {
+        e.preventDefault();
+        toggleLauncher();
+        return;
+    }
+
     const shiftHeld = e.shiftKey || e.getModifierState('CapsLock');
 
     if (shiftHeld && (e.code === 'KeyC' || e.key.toLowerCase() === 'c')) {
         e.preventDefault();
         if (activeWindow) {
             const nextWindow = activeWindow.nextElementSibling || activeWindow.previousElementSibling;
-            container.removeChild(activeWindow);
+            wmContainer.removeChild(activeWindow);
             setActiveWindow(nextWindow);
         }
     }
@@ -528,10 +611,4 @@ launcherInput.addEventListener('input', (e) => {
     renderLauncherResults(e.target.value);
 });
 
-document.getElementById('launcher-btn').addEventListener('click', () => {
-    if (document.activeElement) document.activeElement.blur();
-    toggleLauncher();
-});
-
-spawnWindow("Terminal", "");
-spawnWindow("Text Editor", "");
+spawnWindow("System Monitor", "");
